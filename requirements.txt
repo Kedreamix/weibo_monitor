@@ -1,0 +1,4 @@
+request==2.26.0
+streamlit==1.8.1
+smtplib
+imaplib
