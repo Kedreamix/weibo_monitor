@@ -1,13 +1,12 @@
 import requests
 import re
 import json
-import imaplib
 import smtplib
 import os
 import streamlit as st
 
 # set title of app
-st.title("Simple Image Classification Application")
+st.title("Simple WeiBo Montior")
 st.write("")
 
 option = st.selectbox(
@@ -72,7 +71,6 @@ def run(url):
     headers = {
         "User-Agent":'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36',
         'Cookie':'_T_WM=38793688252; SUB=_2A25OEKPQDeRhGeBN41IQ8y_LzzyIHXVt-s2YrDV6PUJbkdANLUP8kW1NRDhXkiLJMo3NimynjPDMxtga6L2P74oj; SCF=Ave0syr5qLsxIxYj9gMCEPxEwVUzm7jxhNDNEYBqAMAjo7ywD8NWD5I2WJtn_dXrJkQDgBOwNUV3sNdFG6dKhSw.; WEIBOCN_FROM=1110006030; MLOGIN=1; XSRF-TOKEN=99d44b; mweibo_short_token=d7faf9234f; M_WEIBOCN_PARAMS=luicode%3D10000011%26lfid%3D1076031862695480%26fid%3D1005051862695480%26uicode%3D10000011',
-        'x-log-uid': '6380131740',
             }
     container = requests.get(id_url, headers=headers).text
     pattern = re.compile('(?<="tab_type":"weibo","containerid":").*(?=","apipath")')
@@ -80,20 +78,20 @@ def run(url):
     url='https://m.weibo.cn/api/container/getIndex?jumpfrom=weibocom&type=uid&value=%s&containerid=%s' % (id , containerid)
     html = requests.get(url,headers=headers).text
     toptext = json.dumps(json.loads(html)['data']['cards'][0]["mblog"])
-    # print(toptext)
+    # st.write(toptext)
     # pattern = re.compile('(?<="title": {"text":).*(?=,)')
     # top = pattern.findall(toptext)
     top = json.loads(toptext)['text']
 
-    print(top)
+    st.write(top)
     if top ==[]:
-        print('没有置顶')
+        st.write('没有置顶')
         time = json.loads(html)['data']['cards'][0]["mblog"]['created_at']
         text = json.loads(html)['data']['cards'][0]["mblog"]['text']
         if text == oldjson:
-            print('无变动')
+            st.write('无变动')
         else:
-            print('有变动')
+            st.write('有变动')
             file = open('old.txt', 'w', encoding='utf-8')
             file.write(text)
             data = '你关注的人微博有新的动态啦' + '\n\n' + '发布时间为：' + time + '\n' + '发布内容为：' + text + '\n\n' + '微博链接：' + weibourl
@@ -101,16 +99,16 @@ def run(url):
             st.write(data)
 
     else:
-        print('有置顶')
+        st.write('有置顶')
         top_time1 = json.loads(html)['data']['cards'][0]["mblog"]['created_at']
         top_text1 = json.loads(html)['data']['cards'][0]["mblog"]['text']
         top_time2 = json.loads(html)['data']['cards'][1]["mblog"]['created_at']
         top_text2 = json.loads(html)['data']['cards'][1]["mblog"]['text']
         if top_text1 == oldjson:
-            print('第一条置顶了')
+            st.write('第一条置顶了')
 
         else:
-            print('有变动')
+            st.write('有变动')
             file = open('old.txt', 'w', encoding='utf-8')
             file.write(top_text1)
             data = '你关注的人微博有新的置顶微博' + '\n\n' + '置顶微博' + '发布时间为：' + top_time1 + '\n' + '发布内容为：' + top_text1 + '\n\n' + '第二条微博' + '发布时间为：' + top_time2 + '\n' + '发布内容为：' + top_text2 + '\n\n' + '微博链接：' + weibourl
@@ -123,6 +121,7 @@ def main_handler(event, context):
 
 from time import sleep
 
-while True:
-    run(weibourl)
-    sleep(60*int(option))
+if st.button('Process'):
+    while True:
+        run(weibourl)
+        sleep(60*int(option[0]))
